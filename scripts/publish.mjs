@@ -13,7 +13,7 @@ const statePath = path.join(rootDir, ".bloo-state.json");
 const once = process.argv.includes("--once");
 
 if (once) {
-  await runCycle();
+  await runCycle({ forceBuild: true });
 } else {
   console.log(
     `Watching ${config.postsDir}/ every ${config.checkIntervalMinutes} minute(s). Cooldown: ${config.cooldownMinutes} minute(s).`,
@@ -22,30 +22,32 @@ if (once) {
   setInterval(runCycle, config.checkIntervalMinutes * 60 * 1000);
 }
 
-async function runCycle() {
+async function runCycle({ forceBuild = false } = {}) {
   try {
     const postFiles = await listMarkdownFiles(path.join(rootDir, config.postsDir));
     const state = await readState();
+    const contentHash = postFiles.length > 0 ? await hashFiles(postFiles) : null;
 
-    if (postFiles.length === 0) {
-      console.log("No Markdown posts found.");
-      return;
-    }
+    if (!forceBuild) {
+      if (postFiles.length === 0) {
+        console.log("No Markdown posts found.");
+        return;
+      }
 
-    const contentHash = await hashFiles(postFiles);
-    if (contentHash === state.lastPublishedHash) {
-      console.log("No content changes since last publish.");
-      return;
-    }
+      if (contentHash === state.lastPublishedHash) {
+        console.log("No content changes since last publish.");
+        return;
+      }
 
-    const latestEditAt = await getLatestMtime(postFiles);
-    const ageMs = Date.now() - latestEditAt;
-    const cooldownMs = config.cooldownMinutes * 60 * 1000;
+      const latestEditAt = await getLatestMtime(postFiles);
+      const ageMs = Date.now() - latestEditAt;
+      const cooldownMs = config.cooldownMinutes * 60 * 1000;
 
-    if (ageMs < cooldownMs) {
-      const minutesLeft = Math.ceil((cooldownMs - ageMs) / 60000);
-      console.log(`Content changed but is still cooling down. Retry in about ${minutesLeft} minute(s).`);
-      return;
+      if (ageMs < cooldownMs) {
+        const minutesLeft = Math.ceil((cooldownMs - ageMs) / 60000);
+        console.log(`Content changed but is still cooling down. Retry in about ${minutesLeft} minute(s).`);
+        return;
+      }
     }
 
     await npmRun("build");
@@ -53,7 +55,9 @@ async function runCycle() {
     const statusBeforeCommit = await git(["status", "--porcelain"]);
     if (!statusBeforeCommit.trim()) {
       console.log("Build completed but there is nothing new to commit.");
-      await writeState({ lastPublishedHash: contentHash });
+      if (contentHash) {
+        await writeState({ lastPublishedHash: contentHash });
+      }
       return;
     }
 
@@ -65,12 +69,16 @@ async function runCycle() {
     const remote = await git(["remote"]);
     if (!remote.trim()) {
       console.log("Committed locally. No git remote configured, so nothing was pushed.");
-      await writeState({ lastPublishedHash: contentHash });
+      if (contentHash) {
+        await writeState({ lastPublishedHash: contentHash });
+      }
       return;
     }
 
     await git(["push", "origin", config.branch]);
-    await writeState({ lastPublishedHash: contentHash });
+    if (contentHash) {
+      await writeState({ lastPublishedHash: contentHash });
+    }
     console.log(`Published to origin/${config.branch}.`);
   } catch (error) {
     const message = error.stderr || error.stdout || error.message;

@@ -7,7 +7,7 @@ Bloo is a local-first auto-publishing blog MVP.
 - Write posts in `posts/*.md`.
 - Run `npm run autopublish`.
 - Every few minutes, Bloo checks for changed Markdown.
-- If the files have been untouched for the cooldown window, Bloo builds `public/`, commits, and pushes.
+- If the files have been untouched for the cooldown window, Bloo builds `docs/`, commits, and pushes.
 
 ## Post format
 
@@ -39,4 +39,3 @@ Edit `bloo.config.json`:
 - `npm run build` builds the static site once
 - `npm run publish:once` runs one publish cycle
 - `npm run autopublish` runs the loop
-# bloo
