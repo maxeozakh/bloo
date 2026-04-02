@@ -1,1 +1,1 @@
-something
+https://block.xyz/inside/from-hierarchy-to-intelligence
