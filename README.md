@@ -1,41 +1,51 @@
-# Bloo
+# bloo
 
-Bloo is a local-first auto-publishing blog MVP.
+bloo is a local-first auto-publishing blog.
+
+Write Markdown in `posts/`. bloo turns each file into a plain HTML page in `docs/` and rebuilds the homepage as a minimal list of post links and dates.
 
 ## How it works
 
-- Write posts in `posts/*.md`.
-- Run `npm run autopublish`.
-- Every few minutes, Bloo checks for changed Markdown.
-- If the files have been untouched for the cooldown window, Bloo builds `docs/`, commits, and pushes.
+- Write or edit `posts/*.md`
+- Run `npm run autopublish`
+- bloo watches for changes
+- After the cooldown window, it rebuilds `docs/`, commits, and pushes
 
 ## Post format
 
-Use frontmatter at the top of each file:
+Frontmatter is optional, but supported:
 
 ```md
 ---
 title: My Post
 date: 2026-04-02
+slug: my-post
 draft: false
 ---
 
 Your Markdown here.
 ```
 
-`draft: true` skips publishing that post.
+Notes:
+
+- `title` defaults to the filename
+- `date` defaults to today
+- `slug` defaults to a slugified filename
+- `draft: true` skips publishing
 
 ## Config
 
 Edit `bloo.config.json`:
 
-- `checkIntervalMinutes`: how often Bloo checks for changes
-- `cooldownMinutes`: how long a file must sit unchanged before publishing
+- `siteTitle`: HTML title for the site
+- `postsDir`: source Markdown directory
+- `outputDir`: generated site directory
 - `branch`: branch to push to
-- `siteTitle`: title shown in generated HTML
+- `checkIntervalMinutes`: how often bloo checks for changes
+- `cooldownMinutes`: how long files must stay untouched before publishing
 
 ## Commands
 
-- `npm run build` builds the static site once
+- `npm run build` builds the site once
 - `npm run publish:once` runs one publish cycle
-- `npm run autopublish` runs the loop
+- `npm run autopublish` runs the publish loop

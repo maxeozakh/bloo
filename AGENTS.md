@@ -1,4 +1,12 @@
-# Bloo Project Rules
+# bloo Project Rules
+
+## Project Summary
+
+- bloo is a local-first auto-publishing blog.
+- Markdown files in `posts/` are turned into plain HTML pages in `docs/`.
+- The homepage index is auto-generated from the posts.
+- Publishing should feel automatic and low-pressure.
+- Keep the generated site extremely minimal.
 
 - Reply in short form.
 - Keep answers compact and practical.

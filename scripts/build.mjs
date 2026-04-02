@@ -24,17 +24,16 @@ for (const filePath of postFiles) {
     continue;
   }
 
-  const slug = slugify(data.slug || path.basename(filePath, path.extname(filePath)));
-  const title = data.title || slug;
+  const baseName = path.basename(filePath, path.extname(filePath));
+  const slug = slugify(data.slug || baseName);
+  const title = data.title || humanizeTitle(baseName);
   const publishedAt = data.date || new Date().toISOString().slice(0, 10);
   const html = marked.parse(content);
-  const excerpt = extractExcerpt(content);
 
   posts.push({
     slug,
     title,
     publishedAt,
-    excerpt,
     html,
   });
 }
@@ -48,7 +47,7 @@ for (const post of posts) {
     path.join(postDir, "index.html"),
     renderPage({
       title: `${post.title} | ${config.siteTitle}`,
-      body: renderPost(post, config),
+      body: renderPost(post),
     }),
   );
 }
@@ -99,15 +98,11 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-function extractExcerpt(markdown) {
-  const firstParagraph = markdown
-    .split(/\n\s*\n/)
-    .map((part) => part.trim())
-    .find(Boolean);
-
-  return (firstParagraph || "")
-    .replace(/[#*_`\[\]]/g, "")
-    .slice(0, 180);
+function humanizeTitle(value) {
+  return String(value)
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function renderIndex(posts, config) {
@@ -116,9 +111,8 @@ function renderIndex(posts, config) {
         .map(
           (post) => `
             <li>
-              <a href="./${post.slug}/">${escapeHtml(post.title)}</a>
+              <a href="./${post.slug}/">${escapeHtml(humanizeTitle(post.title))}</a>
               <div>${escapeHtml(post.publishedAt)}</div>
-              <p>${escapeHtml(post.excerpt)}</p>
             </li>
           `,
         )
@@ -126,16 +120,15 @@ function renderIndex(posts, config) {
     : `<p>No published posts yet.</p><p>Add a Markdown file in <code>${escapeHtml(config.postsDir)}/</code>.</p>`;
 
   return `
-    <h2>Posts</h2>
     ${posts.length ? `<ul>${items}</ul>` : items}
   `;
 }
 
-function renderPost(post, config) {
+function renderPost(post) {
   return `
     <p><a href="../">Home</a></p>
     <p>${escapeHtml(post.publishedAt)}</p>
-    <h1>${escapeHtml(post.title)}</h1>
+    <h1>${escapeHtml(humanizeTitle(post.title))}</h1>
     <article>${post.html}</article>
   `;
 }
