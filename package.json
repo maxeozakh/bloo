@@ -1,0 +1,21 @@
+{
+  "name": "bloo",
+  "version": "1.0.0",
+  "description": "Local-first auto-publishing blog MVP",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "publish:once": "node scripts/publish.mjs --once",
+    "autopublish": "node scripts/publish.mjs"
+  },
+  "keywords": [
+    "blog",
+    "markdown",
+    "github-pages"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "marked": "^17.0.5"
+  }
+}

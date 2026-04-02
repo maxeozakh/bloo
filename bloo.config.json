@@ -1,0 +1,10 @@
+{
+  "siteTitle": "Bloo",
+  "siteDescription": "A quiet auto-publishing blog.",
+  "siteUrl": "",
+  "branch": "main",
+  "postsDir": "posts",
+  "outputDir": "public",
+  "checkIntervalMinutes": 5,
+  "cooldownMinutes": 10
+}
