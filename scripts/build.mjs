@@ -146,6 +146,8 @@ function renderPage({ title, body }) {
       body {
         margin: 0;
         padding: 24px;
+        max-width: 800px;
+        margin-inline: auto;
       }
 
       ul {
