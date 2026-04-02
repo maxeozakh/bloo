@@ -6,5 +6,5 @@
 	"postsDir": "posts",
 	"outputDir": "docs",
 	"checkIntervalMinutes": 0.1,
-	"cooldownMinutes": 1
+	"cooldownMinutes": 0.5
 }
