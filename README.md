@@ -39,3 +39,4 @@ Edit `bloo.config.json`:
 - `npm run build` builds the static site once
 - `npm run publish:once` runs one publish cycle
 - `npm run autopublish` runs the loop
+# bloo
