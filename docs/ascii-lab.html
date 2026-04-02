@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ascii lab | bloo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #060814;
+        --panel: #0f1326;
+        --text: #f8f6ff;
+        --muted: #cbbde8;
+        --accent: #ffb7da;
+        --accent2: #9fd6ff;
+        --border: rgba(255, 183, 218, 0.22);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at 18% 16%, rgba(255, 183, 218, 0.16), transparent 26%),
+          radial-gradient(circle at 84% 14%, rgba(159, 214, 255, 0.14), transparent 22%),
+          radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.05), transparent 32%),
+          var(--bg);
+        color: var(--text);
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      main {
+        width: min(100%, 1120px);
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(15, 19, 38, 0.98), rgba(8, 10, 21, 0.99));
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .title strong {
+        display: block;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 14px;
+      }
+
+      .title span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        border: 1px solid var(--border);
+        background: rgba(255, 183, 218, 0.08);
+        color: var(--text);
+        padding: 8px 10px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: rgba(255, 183, 218, 0.15);
+      }
+
+      #label {
+        color: var(--accent2);
+      }
+
+      pre {
+        margin: 0;
+        padding: 18px 16px 20px;
+        min-height: 700px;
+        overflow: auto;
+        white-space: pre;
+        font-size: 12px;
+        line-height: 12px;
+        letter-spacing: 0.02em;
+        text-shadow: 0 0 8px rgba(255, 183, 218, 0.12);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="toolbar">
+        <div class="title">
+          <strong>ascii lab</strong>
+          <span>smol robot variants only</span>
+        </div>
+        <div class="controls">
+          <button id="prev" type="button">prev</button>
+          <button id="next" type="button">next</button>
+          <button id="pause" type="button">pause</button>
+          <button id="shuffle" type="button">shuffle</button>
+          <button id="cycle" type="button">auto: on</button>
+          <button id="label" type="button" aria-live="polite">scene: ramen bot</button>
+        </div>
+      </div>
+      <pre id="screen"></pre>
+    </main>
+
+    <script>
+      const width = 98;
+      const height = 46;
+      const screen = document.getElementById("screen");
+      const label = document.getElementById("label");
+      const pauseButton = document.getElementById("pause");
+      const cycleButton = document.getElementById("cycle");
+
+      let running = true;
+      let autoCycle = true;
+      let currentScene = 0;
+      let lastSwap = 0;
+      let t = 0;
+
+      const starChars = " .+*";
+      const stars = Array.from({ length: 140 }, () => ({
+        x: Math.floor(Math.random() * width),
+        y: Math.floor(Math.random() * height),
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 1.2,
+      }));
+
+      const scenes = [
+        { name: "ramen bot", draw: drawRamenBot },
+        { name: "sleepy bot", draw: drawSleepyBot },
+        { name: "delivery bot", draw: drawDeliveryBot },
+        { name: "idol bot", draw: drawIdolBot },
+        { name: "garden bot", draw: drawGardenBot },
+      ];
+
+      function newBuffer(fill = " ") {
+        return Array.from({ length: height }, () => Array(width).fill(fill));
+      }
+
+      function put(buffer, x, y, char) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+          buffer[y][x] = char;
+        }
+      }
+
+      function text(buffer, x, y, value) {
+        for (let i = 0; i < value.length; i += 1) {
+          put(buffer, x + i, y, value[i]);
+        }
+      }
+
+      function stamp(buffer, title, subtitle) {
+        const bar = "+------------------------------------------------------------------------------------------------+";
+        text(buffer, 1, 1, bar);
+        text(buffer, 1, 2, `| ${title.padEnd(94, " ")}|`);
+        text(buffer, 1, 3, `| ${subtitle.padEnd(94, " ")}|`);
+        text(buffer, 1, 4, bar);
+      }
+
+      function drawStars(buffer, time) {
+        for (const star of stars) {
+          if (star.y < 6) {
+            continue;
+          }
+          const pulse = Math.sin(time * star.speed + star.phase);
+          const index = Math.max(0, Math.min(starChars.length - 1, Math.floor(((pulse + 1) / 2) * starChars.length)));
+          put(buffer, star.x, star.y, starChars[Math.min(index, starChars.length - 1)]);
+        }
+      }
+
+      function drawBot(buffer, x, y, face, accessory = "") {
+        text(buffer, x, y, "  [::::]");
+        text(buffer, x, y + 1, `  [${face}]`);
+        text(buffer, x, y + 2, " /(____)\\\\");
+        text(buffer, x, y + 3, "   /  \\\\");
+        if (accessory) {
+          text(buffer, x - 2, y - 1, accessory);
+        }
+      }
+
+      function drawRamenBowl(buffer, x, y, time) {
+        const bowl = [
+          "             __________________            ",
+          "          .-'__________________'-.         ",
+          "         /________________________\\\\        ",
+          "         \\\\________________________//        ",
+          "          '----------------------'          ",
+        ];
+
+        bowl.forEach((line, row) => {
+          text(buffer, x, y + row, line);
+        });
+        text(buffer, x + 12, y + 1, "~~~~~~~~~~~~~~");
+
+        const steam = 10 + Math.round(Math.sin(time * 2.2) * 2);
+        for (let i = 0; i < 6; i += 1) {
+          const sx = x + 19 + i * 2;
+          for (let s = 0; s < steam; s += 1) {
+            put(buffer, sx + Math.round(Math.sin(time * 2 + s * 0.5 + i) * 1), y - s, "~");
+          }
+        }
+      }
+
+      function drawRamenBot(time) {
+        const buffer = newBuffer(" ");
+        stamp(buffer, "ascii lab / ramen bot", "the original noodle unit returns");
+
+        drawRamenBowl(buffer, 25, 24, time);
+        const blink = Math.sin(time * 3) > 0.2 ? "o o" : "- -";
+        drawBot(buffer, 63, 22, blink);
+        text(buffer, 61, 28, "slurp mode");
+        text(buffer, 31, 40, "friendship, soup, and low battery");
+        return buffer;
+      }
+
+      function drawSleepyBot(time) {
+        const buffer = newBuffer(" ");
+        stamp(buffer, "ascii lab / sleepy bot", "just a tiny robot and a few drifting zzz");
+        drawBot(buffer, 42, 24, "- -", "  z  z");
+
+        for (let i = 0; i < 4; i += 1) {
+          text(buffer, 58 + i * 3, 18 - i * 2 + Math.round(Math.sin(time * 2 + i)), "z");
+        }
+
+        text(buffer, 34, 40, "dreaming of quieter batteries");
+        return buffer;
+      }
+
+      function drawDeliveryBot(time) {
+        const buffer = newBuffer(" ");
+        stamp(buffer, "ascii lab / delivery bot", "express shipping for pastries and tiny emergencies");
+
+        for (let x = 0; x < width; x += 1) {
+          put(buffer, x, 37, x % 2 === 0 ? "=" : "-");
+          put(buffer, x, 38, "_");
+        }
+
+        const baseX = Math.floor((time * 8) % (width + 28)) - 24;
+        text(buffer, baseX, 31, "     _____________");
+        text(buffer, baseX, 32, " ___/[] [] [] [] /|");
+        text(buffer, baseX, 33, "|___delivery____|/ ");
+        text(buffer, baseX, 34, "  O           O    ");
+
+        drawBot(buffer, baseX + 4, 24, "o o", "  !!");
+        text(buffer, baseX + 22, 29, "[mochi]");
+        text(buffer, 26, 41, "please sign here with a sparkle");
+        return buffer;
+      }
+
+      function drawIdolBot(time) {
+        const buffer = newBuffer(" ");
+        stamp(buffer, "ascii lab / idol bot", "performing one legally required transformation song");
+        drawStars(buffer, time);
+
+        const cx = 49;
+        const cy = 24;
+        const spin = time * 1.7;
+        const face = Math.sin(time * 4) > 0 ? "^ ^" : "o o";
+
+        drawBot(buffer, 44, 20, face, "  *  *");
+        text(buffer, 43, 24, "   /||\\\\");
+        text(buffer, 43, 25, "  _/  \\_");
+
+        for (let a = 0; a < Math.PI * 2; a += 0.45) {
+          const x = Math.round(cx + Math.cos(a + spin) * 14);
+          const y = Math.round(cy + Math.sin(a + spin) * 7);
+          text(buffer, x, y, a % 0.9 < 0.1 ? "*" : "+");
+        }
+
+        text(buffer, 35, 39, "applause generated internally");
+        return buffer;
+      }
+
+      function drawGardenBot(time) {
+        const buffer = newBuffer(" ");
+        stamp(buffer, "ascii lab / garden bot", "watering flowers with maximum sincerity");
+
+        for (let x = 8; x < width - 8; x += 1) {
+          const y = 37 + Math.round(Math.sin(x * 0.18 + time * 0.8) * 1.2);
+          put(buffer, x, y, "_");
+        }
+
+        for (let i = 0; i < 8; i += 1) {
+          const fx = 18 + i * 8;
+          const stem = 32 + Math.round(Math.sin(i + time) * 1);
+          put(buffer, fx, stem, "|");
+          put(buffer, fx, stem - 1, "|");
+          text(buffer, fx - 1, stem - 2, i % 2 === 0 ? "*" : "o");
+        }
+
+        drawBot(buffer, 60, 23, "u u", " \\_/ ");
+
+        for (let i = 0; i < 10; i += 1) {
+          const wx = 54 + i;
+          const wy = 29 + Math.round(Math.sin(time * 4 + i * 0.4) * 1.2);
+          put(buffer, wx, wy, "'");
+        }
+
+        text(buffer, 29, 41, "small gardener of improbable joy");
+        return buffer;
+      }
+
+      function render(buffer) {
+        screen.textContent = buffer.map((row) => row.join("")).join("\n");
+        label.textContent = `scene: ${scenes[currentScene].name}`;
+      }
+
+      function setScene(index) {
+        currentScene = (index + scenes.length) % scenes.length;
+        lastSwap = performance.now();
+      }
+
+      function shuffleScene() {
+        let next = currentScene;
+        while (next === currentScene) {
+          next = Math.floor(Math.random() * scenes.length);
+        }
+        setScene(next);
+      }
+
+      function frame(now) {
+        if (running) {
+          t += 0.035;
+          if (autoCycle && now - lastSwap > 12000) {
+            setScene(currentScene + 1);
+          }
+          render(scenes[currentScene].draw(t));
+        }
+        requestAnimationFrame(frame);
+      }
+
+      document.getElementById("prev").addEventListener("click", () => setScene(currentScene - 1));
+      document.getElementById("next").addEventListener("click", () => setScene(currentScene + 1));
+      document.getElementById("shuffle").addEventListener("click", shuffleScene);
+
+      pauseButton.addEventListener("click", () => {
+        running = !running;
+        pauseButton.textContent = running ? "pause" : "resume";
+      });
+
+      cycleButton.addEventListener("click", () => {
+        autoCycle = !autoCycle;
+        cycleButton.textContent = `auto: ${autoCycle ? "on" : "off"}`;
+        lastSwap = performance.now();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft") {
+          setScene(currentScene - 1);
+        } else if (event.key === "ArrowRight") {
+          setScene(currentScene + 1);
+        } else if (event.key === " ") {
+          event.preventDefault();
+          pauseButton.click();
+        }
+      });
+
+      setScene(0);
+      requestAnimationFrame(frame);
+    </script>
+  </body>
+</html>

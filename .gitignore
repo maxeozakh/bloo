@@ -1,2 +1,3 @@
 node_modules
 .bloo-state.json
+.DS_Store

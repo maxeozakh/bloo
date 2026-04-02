@@ -121,6 +121,14 @@ function renderIndex(posts, config) {
 
   return `
     ${posts.length ? `<ul>${items}</ul>` : items}
+    <pre class="sleepy-bot" aria-hidden="true">  z
+      z
+        z
+
+      [::::]
+      [- -]
+     /(____)\\
+       /  \\</pre>
   `;
 }
 
@@ -140,6 +148,35 @@ function renderPage({ title, body }) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(title)}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+
+      .sleepy-bot {
+        position: fixed;
+        right: 24px;
+        bottom: 18px;
+        margin: 0;
+        line-height: 1.1;
+        pointer-events: none;
+        white-space: pre;
+      }
+
+      @media (max-width: 700px) {
+        body {
+          padding: 16px;
+        }
+
+        .sleepy-bot {
+          right: 12px;
+          bottom: 10px;
+          font-size: 10px;
+          line-height: 1;
+        }
+      }
+    </style>
   </head>
   <body>${body}</body>
 </html>`;
