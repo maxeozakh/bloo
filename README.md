@@ -41,8 +41,8 @@ Edit `bloo.config.json`:
 - `postsDir`: source Markdown directory
 - `outputDir`: generated site directory
 - `branch`: branch to push to
-- `checkIntervalMinutes`: how often bloo checks for changes
-- `cooldownMinutes`: how long files must stay untouched before publishing
+- `checkIntervalSeconds`: how often bloo checks for changes
+- `cooldownSeconds`: how long files must stay untouched before publishing
 
 ## Commands
 

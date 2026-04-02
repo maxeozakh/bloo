@@ -11,15 +11,19 @@ const config = JSON.parse(
 );
 const statePath = path.join(rootDir, ".bloo-state.json");
 const once = process.argv.includes("--once");
+const checkIntervalSeconds =
+  config.checkIntervalSeconds ?? Math.round((config.checkIntervalMinutes ?? 1) * 60);
+const cooldownSeconds =
+  config.cooldownSeconds ?? Math.round((config.cooldownMinutes ?? 1) * 60);
 
 if (once) {
   await runCycle({ forceBuild: true });
 } else {
   console.log(
-    `Watching ${config.postsDir}/ every ${config.checkIntervalMinutes} minute(s). Cooldown: ${config.cooldownMinutes} minute(s).`,
+    `Watching ${config.postsDir}/ every ${checkIntervalSeconds} second(s). Cooldown: ${cooldownSeconds} second(s).`,
   );
   await runCycle();
-  setInterval(runCycle, config.checkIntervalMinutes * 60 * 1000);
+  setInterval(runCycle, checkIntervalSeconds * 1000);
 }
 
 async function runCycle({ forceBuild = false } = {}) {
@@ -41,11 +45,11 @@ async function runCycle({ forceBuild = false } = {}) {
 
       const latestEditAt = await getLatestMtime(postFiles);
       const ageMs = Date.now() - latestEditAt;
-      const cooldownMs = config.cooldownMinutes * 60 * 1000;
+      const cooldownMs = cooldownSeconds * 1000;
 
       if (ageMs < cooldownMs) {
-        const minutesLeft = Math.ceil((cooldownMs - ageMs) / 60000);
-        console.log(`Content changed but is still cooling down. Retry in about ${minutesLeft} minute(s).`);
+        const secondsLeft = Math.ceil((cooldownMs - ageMs) / 1000);
+        console.log(`Content changed but is still cooling down. Retry in about ${secondsLeft} second(s).`);
         return;
       }
     }
