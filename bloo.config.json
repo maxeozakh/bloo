@@ -1,10 +1,10 @@
 {
-  "siteTitle": "Bloo",
-  "siteDescription": "A quiet auto-publishing blog.",
-  "siteUrl": "",
-  "branch": "main",
-  "postsDir": "posts",
-  "outputDir": "docs",
-  "checkIntervalMinutes": 0.5,
-  "cooldownMinutes": 0.5
+	"siteTitle": "Bloo",
+	"siteDescription": "A quiet auto-publishing blog.",
+	"siteUrl": "",
+	"branch": "main",
+	"postsDir": "posts",
+	"outputDir": "docs",
+	"checkIntervalMinutes": 0.1,
+	"cooldownMinutes": 0.3
 }
