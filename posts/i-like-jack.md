@@ -1,5 +1,4 @@
 https://block.xyz/inside/from-hierarchy-to-intelligence great article about new possibilites for org structures and stuff
-
 thoughts from chat with friends:
 
 "мне понравилось что это глоток чего то свежего, что персонаж подсвечивает действительность -- много много восприятия эай через призму мультиплаера продуктивности, а на деле можно попробовать и в какие-то совсем недоступные доселе пути в процессах
