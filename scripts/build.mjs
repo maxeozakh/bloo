@@ -148,6 +148,7 @@ function renderPage({ title, body }) {
         padding: 24px;
         max-width: 800px;
         margin-inline: auto;
+        position: relative;
       }
 
       ul {
@@ -156,7 +157,7 @@ function renderPage({ title, body }) {
       }
 
       .sleepy-bot {
-        position: fixed;
+        position: absolute;
         right: 24px;
         top: 18px;
         margin: 0;
