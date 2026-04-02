@@ -5,6 +5,6 @@
 	"branch": "main",
 	"postsDir": "posts",
 	"outputDir": "docs",
-	"checkIntervalMinutes": 0.1,
-	"cooldownMinutes": 1
+	"checkIntervalSeconds": 6,
+	"cooldownSeconds": 30
 }
