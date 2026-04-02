@@ -28,7 +28,7 @@ for (const filePath of postFiles) {
   const slug = slugify(data.slug || baseName);
   const title = data.title || humanizeTitle(baseName);
   const publishedAt = data.date || new Date().toISOString().slice(0, 10);
-  const html = marked.parse(content);
+  const html = marked.parse(content, { breaks: true });
 
   posts.push({
     slug,
@@ -121,14 +121,7 @@ function renderIndex(posts, config) {
 
   return `
     ${posts.length ? `<ul>${items}</ul>` : items}
-    <pre class="sleepy-bot" aria-hidden="true">  z
-      z
-        z
-
-      [::::]
-      [- -]
-     /(____)\\
-       /  \\</pre>
+    ${renderSleepyBot()}
   `;
 }
 
@@ -138,6 +131,7 @@ function renderPost(post) {
     <p>${escapeHtml(post.publishedAt)}</p>
     <h1>${escapeHtml(humanizeTitle(post.title))}</h1>
     <article>${post.html}</article>
+    ${renderSleepyBot()}
   `;
 }
 
@@ -154,27 +148,19 @@ function renderPage({ title, body }) {
         padding: 24px;
       }
 
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+
       .sleepy-bot {
         position: fixed;
         right: 24px;
-        bottom: 18px;
+        top: 18px;
         margin: 0;
         line-height: 1.1;
         pointer-events: none;
         white-space: pre;
-      }
-
-      @media (max-width: 700px) {
-        body {
-          padding: 16px;
-        }
-
-        .sleepy-bot {
-          right: 12px;
-          bottom: 10px;
-          font-size: 10px;
-          line-height: 1;
-        }
       }
     </style>
   </head>
@@ -188,4 +174,15 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function renderSleepyBot() {
+  return `<pre class="sleepy-bot" aria-hidden="true">  z
+      z
+        z
+
+      [::::]
+      [- -]
+     /(____)\\
+       /  \\</pre>`;
 }
