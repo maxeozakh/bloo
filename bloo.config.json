@@ -4,7 +4,7 @@
   "siteUrl": "",
   "branch": "main",
   "postsDir": "posts",
-  "outputDir": "public",
-  "checkIntervalMinutes": 5,
-  "cooldownMinutes": 10
+  "outputDir": "docs",
+  "checkIntervalMinutes": 0.5,
+  "cooldownMinutes": 0.5
 }
