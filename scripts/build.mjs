@@ -1,9 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import matter from "gray-matter";
 import { marked } from "marked";
 
 const rootDir = process.cwd();
+const execFileAsync = promisify(execFile);
 const config = JSON.parse(
   await fs.readFile(path.join(rootDir, "bloo.config.json"), "utf8"),
 );
@@ -27,7 +30,7 @@ for (const filePath of postFiles) {
   const baseName = path.basename(filePath, path.extname(filePath));
   const slug = slugify(data.slug || baseName);
   const title = data.title || humanizeTitle(baseName);
-  const publishedAt = data.date || new Date().toISOString().slice(0, 10);
+  const publishedAt = data.date || (await getPublishedAt(filePath));
   const html = marked.parse(content, { breaks: true });
 
   posts.push({
@@ -88,6 +91,20 @@ async function clearDir(dir) {
       fs.rm(path.join(dir, entry.name), { recursive: true, force: true }),
     ),
   );
+}
+
+async function getPublishedAt(filePath) {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["log", "--diff-filter=A", "--follow", "--format=%ad", "--date=format:%F", "--", filePath],
+      { cwd: rootDir },
+    );
+    const firstCommitDate = stdout.trim().split("\n")[0];
+    return firstCommitDate || new Date().toISOString().slice(0, 10);
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
 }
 
 function slugify(value) {
