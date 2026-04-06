@@ -8,6 +8,7 @@
 - Publishing should feel automatic and low-pressure.
 - Keep the generated site extremely minimal.
 
+## agents read this
 - Reply in short form.
 - Keep answers compact and practical.
 - Default to 3-5 sentences.

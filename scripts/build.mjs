@@ -134,10 +134,10 @@ function renderIndex(posts, config) {
           `,
         )
         .join("")
-    : `<p>No published posts yet.</p><p>Add a Markdown file in <code>${escapeHtml(config.postsDir)}/</code>.</p>`;
+    : "";
 
   return `
-    ${posts.length ? `<ul>${items}</ul>` : items}
+    ${posts.length ? `<ul>${items}</ul>` : ""}
     ${renderSleepyBot()}
   `;
 }
