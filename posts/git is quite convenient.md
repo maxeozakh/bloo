@@ -1,5 +1,5 @@
 emo delete your posts 
-it's under the git
+they're under the git
 few weeks pass
-you come back and ressurect it
+you come back and resurrect them
 quite convenient by me
