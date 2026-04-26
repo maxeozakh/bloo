@@ -1,1 +1,0 @@
-https://maxeozakh.github.io/bloo/rss.xml
