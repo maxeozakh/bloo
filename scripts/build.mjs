@@ -30,7 +30,7 @@ for (const filePath of postFiles) {
   const baseName = path.basename(filePath, path.extname(filePath));
   const slug = slugify(data.slug || baseName);
   const title = data.title || humanizeTitle(baseName);
-  const publishedAt = data.date || (await getPublishedAt(filePath));
+  const publishedAt = await resolvePublishedAt(data.date, filePath);
   const html = marked.parse(content, { breaks: true });
 
   posts.push({
@@ -41,7 +41,7 @@ for (const filePath of postFiles) {
   });
 }
 
-posts.sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+posts.sort((a, b) => toTimestampMs(b.publishedAt) - toTimestampMs(a.publishedAt));
 
 for (const post of posts) {
   const postDir = path.join(outputDir, post.slug);
@@ -59,7 +59,7 @@ await fs.writeFile(
   path.join(outputDir, "index.html"),
   renderPage({
     title: config.siteTitle,
-    body: renderIndex(posts, config),
+    body: renderIndex(posts),
   }),
 );
 
@@ -97,14 +97,24 @@ async function getPublishedAt(filePath) {
   try {
     const { stdout } = await execFileAsync(
       "git",
-      ["log", "--diff-filter=A", "--follow", "--format=%ad", "--date=format:%F", "--", filePath],
+      ["log", "--diff-filter=A", "--follow", "--format=%aI", "--", filePath],
       { cwd: rootDir },
     );
     const firstCommitDate = stdout.trim().split("\n")[0];
-    return firstCommitDate || new Date().toISOString().slice(0, 10);
+    return firstCommitDate || new Date().toISOString();
   } catch {
-    return new Date().toISOString().slice(0, 10);
+    return new Date().toISOString();
   }
+}
+
+async function resolvePublishedAt(frontmatterDate, filePath) {
+  if (frontmatterDate !== undefined && frontmatterDate !== null) {
+    const normalized = normalizeFrontmatterDate(frontmatterDate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return getPublishedAt(filePath);
 }
 
 function slugify(value) {
@@ -122,14 +132,14 @@ function humanizeTitle(value) {
     .replace(/\s+/g, " ");
 }
 
-function renderIndex(posts, config) {
+function renderIndex(posts) {
   const items = posts.length
     ? posts
         .map(
           (post) => `
             <li>
               <a href="./${post.slug}/">${escapeHtml(humanizeTitle(post.title))}</a>
-              <div>${escapeHtml(post.publishedAt)}</div>
+              <div>${escapeHtml(toDisplayDate(post.publishedAt))}</div>
             </li>
           `,
         )
@@ -145,7 +155,7 @@ function renderIndex(posts, config) {
 function renderPost(post) {
   return `
     <p><a href="../">Home</a></p>
-    <p>${escapeHtml(post.publishedAt)}</p>
+    <p>${escapeHtml(toDisplayDate(post.publishedAt))}</p>
     <h1>${escapeHtml(humanizeTitle(post.title))}</h1>
     <article>${post.html}</article>
     ${renderSleepyBot()}
@@ -194,6 +204,39 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function toDisplayDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10);
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+function toTimestampMs(value) {
+  const ms = new Date(value).getTime();
+  if (Number.isNaN(ms)) {
+    return 0;
+  }
+  return ms;
+}
+
+function normalizeFrontmatterDate(value) {
+  const raw = String(value).trim();
+  if (!raw) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return `${raw}T00:00:00Z`;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  return parsed.toISOString();
 }
 
 function renderSleepyBot() {
