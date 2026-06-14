@@ -1,3 +1,4 @@
 node_modules
 .bloo-state.json
+.bloo-deploy.json
 .DS_Store

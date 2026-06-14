@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "method": "rsync",
+  "host": "serverXXX.web-hosting.com",
+  "port": 21098,
+  "username": "cpanelUser",
+  "identityFile": "~/.ssh/id_namecheap",
+  "remoteDir": "public_html",
+  "delete": true
+}

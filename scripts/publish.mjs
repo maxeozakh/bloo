@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { deploy } from "./deploy.mjs";
 
 const execFileAsync = promisify(execFile);
 const rootDir = process.cwd();
@@ -55,6 +56,8 @@ async function runCycle({ forceBuild = false } = {}) {
     }
 
     await npmRun("build");
+
+    await deploy({ rootDir });
 
     const statusBeforeCommit = await git(["status", "--porcelain"]);
     if (!statusBeforeCommit.trim()) {

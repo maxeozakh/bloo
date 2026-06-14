@@ -5,7 +5,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "publish:once": "node scripts/publish.mjs --once",
-    "autopublish": "node scripts/publish.mjs"
+    "autopublish": "node scripts/publish.mjs",
+    "deploy": "node scripts/deploy.mjs"
   },
   "keywords": [
     "blog",
