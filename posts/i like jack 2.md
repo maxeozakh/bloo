@@ -1,3 +1,6 @@
+upd: i think it's cool to not overbloat companies, but there is no specifics really that i like
+just was hyped at the morning 
+
 podcast just came out, let's check this out
 https://www.youtube.com/watch?v=YTVSwOY19Qs
 
