@@ -179,6 +179,12 @@ function renderPage({ title, body }) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(title)}</title>
     <style>
+      @media (min-width: 700px) {
+        html {
+          font-size: 150%;
+        }
+      }
+
       body {
         margin: 0;
         padding: 24px;
